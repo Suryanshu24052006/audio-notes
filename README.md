@@ -3,7 +3,6 @@
 Upload an audio recording (any length), get back a transcript from Gnani's speech-to-text API
 and a summary from Gemini. Past uploads are saved and can be reopened.
 
-Made for the Gnani internship take-home. How it works is explained on the `/architecture` page.
 
 ```
 frontend/   Next.js - upload page, recording page, /architecture
