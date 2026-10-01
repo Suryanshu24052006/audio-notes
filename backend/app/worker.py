@@ -52,17 +52,6 @@ def fail_stale_jobs():
               AND updated_at < now() - interval '{STALE_AFTER}'
             """
         )
-        # tab closed mid-upload
-        conn.execute(
-            """
-            UPDATE recordings
-            SET status = 'failed',
-                error = 'The upload didn''t finish. Please upload the file again.',
-                can_retry = FALSE,
-                updated_at = now()
-            WHERE status = 'uploading' AND updated_at < now() - interval '1 hour'
-            """
-        )
 
 
 def load_parts(recording_id):

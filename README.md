@@ -9,7 +9,7 @@ frontend/   Next.js - upload page, recording page, /architecture
 backend/    FastAPI api (app/main.py) + background worker (app/worker.py)
 ```
 
-Stack: Next.js on Vercel, FastAPI + worker + Postgres on Railway, audio files in Supabase Storage.
+Stack: Next.js on Vercel. FastAPI, the worker, Postgres and a storage bucket for the audio files on Railway.
 
 ## Running locally
 
@@ -47,6 +47,8 @@ python check_services.py some-recording.m4a en-IN
 |---|---|
 | `DATABASE_URL` | Postgres |
 | `S3_ENDPOINT_URL`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | storage bucket |
+| `S3_ADDRESSING_STYLE` | `virtual` (default, railway) or `path` (minio, supabase) |
+| `MAX_UPLOAD_MB` | upload size limit, default 200 |
 | `GNANI_API_KEY` | Gnani (worker only) |
 | `LLM_API_KEY`, `LLM_MODEL` | Gemini (worker only) |
 | `FRONTEND_ORIGINS` | frontend url(s) for CORS |
@@ -55,7 +57,7 @@ python check_services.py some-recording.m4a en-IN
 ## Deploying
 
 - Railway: one service for the api (root dir `backend`, uses the Dockerfile), a second one from the
-  same repo for the worker with start command `python -m app.worker`, and a Postgres database.
+  same repo for the worker with start command `python -m app.worker`, a Postgres database and a bucket.
 - Vercel: root dir `frontend`, set `NEXT_PUBLIC_API_URL` to the Railway api url.
 - Add the Vercel url to `FRONTEND_ORIGINS`.
 

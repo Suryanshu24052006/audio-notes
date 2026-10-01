@@ -2,14 +2,13 @@ import { LLM_NAME, REPO_URL, STORAGE_NAME } from "../../lib/site";
 
 export const metadata = { title: "How this works · audio notes" };
 
-const FLOW = `browser  1. ask for an upload link ──▶ FastAPI ──▶ Postgres  (new row: uploading)
-browser  2. send the audio file ────▶ storage bucket
-browser  3. "upload finished" ──────▶ FastAPI ──▶ Postgres  (status: queued)
-worker   4. take the next queued job ─▶ Postgres
-worker   5. download the audio ─────▶ storage bucket
-worker   6. each part, 28 s or less ─▶ Gnani ASR
-worker   7. the full transcript ────▶ ${LLM_NAME}  (summary)
-browser  8. every 2 s: "how far?" ──▶ FastAPI ──▶ Postgres`;
+const FLOW = `browser  1. upload the audio file ──▶ FastAPI ──▶ storage bucket
+                                      FastAPI ──▶ Postgres  (new row: queued)
+worker   2. take the next queued job ─▶ Postgres
+worker   3. download the audio ─────▶ storage bucket
+worker   4. each part, 28 s or less ─▶ Gnani ASR
+worker   5. the full transcript ────▶ ${LLM_NAME}  (summary)
+browser  6. every 2 s: "how far?" ──▶ FastAPI ──▶ Postgres`;
 
 export default function ArchitecturePage() {
   return (
@@ -30,17 +29,13 @@ export default function ArchitecturePage() {
         <pre className="flow">{FLOW}</pre>
         <ol>
           <li>
-            You choose a file and a language. The page asks the API for an upload link, and the
-            API adds a row to the <code>recordings</code> table with the status <code>uploading</code>.
+            You choose a file and a language. The browser sends it to the API, and the upload
+            progress bar shows how much has been sent.
           </li>
           <li>
-            The browser sends the file straight to the storage bucket using that link (a presigned
-            URL, valid for 15 minutes). Large files never pass through the API server. The upload
-            progress bar comes from this step.
-          </li>
-          <li>
-            The browser tells the API the upload finished. The API checks the file really is in the
-            bucket, then sets the status to <code>queued</code>.
+            The API saves the file in the storage bucket, and only then adds a row to the{" "}
+            <code>recordings</code> table with the status <code>queued</code>. If saving fails, no
+            row is created and the page shows the error.
           </li>
           <li>
             The worker picks up the job, checks the file with ffprobe, converts it to 16 kHz mono
@@ -60,6 +55,13 @@ export default function ArchitecturePage() {
           deploy, and the API and the worker run on separate machines that can&apos;t share it. The
           worker downloads a file into a temporary folder while it works on it and deletes the
           folder when it&apos;s done.
+        </p>
+        <p>
+          Uploads go through the API instead of straight from the browser to the bucket. My first
+          version used presigned URLs so the browser could upload directly, but the storage
+          options I looked at either don&apos;t allow browser uploads (CORS) or cap free files at 50 MB.
+          Going through the API avoids that, at the cost of the API handling the file. Files are
+          limited to 200 MB.
         </p>
         <p>
           Everything else is in Postgres, in two tables: <code>recordings</code> (one row per
@@ -102,8 +104,8 @@ export default function ArchitecturePage() {
               </tr>
             </thead>
             <tbody>
-              <tr><td>Creating a recording and its upload link</td><td>Checking and converting the audio</td></tr>
-              <tr><td>Marking an upload as finished</td><td>Cutting it into parts</td></tr>
+              <tr><td>Receiving the upload and saving it to the bucket</td><td>Checking and converting the audio</td></tr>
+              <tr><td>Creating the recording row</td><td>Cutting it into parts</td></tr>
               <tr><td>Returning a recording&apos;s status and results</td><td>Transcribing every part with Gnani</td></tr>
               <tr><td>Listing past uploads</td><td>Writing the summary</td></tr>
             </tbody>
@@ -121,7 +123,7 @@ export default function ArchitecturePage() {
       <section className="prose">
         <h2>When something fails</h2>
         <ul>
-          <li>Upload interrupted: the page says so and you can upload again. Uploads that never finish are marked as failed after an hour.</li>
+          <li>Upload interrupted, file too big, or the bucket unreachable: the upload form shows the error and nothing is saved, so you can just upload again.</li>
           <li>Unreadable or damaged file: caught by ffprobe before any transcription credits are spent.</li>
           <li>Gnani busy or down (429, 500, 502, 503, 504, or a timeout): the part is retried after 1, 2 and 4 seconds. If it still fails, the job stops, keeps the finished parts, and offers a retry.</li>
           <li>Audio Gnani rejects (400): not retried, since it would fail the same way again. The message is shown.</li>
@@ -143,7 +145,7 @@ export default function ArchitecturePage() {
           <li>Send three or four parts to Gnani at the same time instead of one after another, so long files finish faster.</li>
           <li>Push status updates to the page with server-sent events instead of asking every 2 seconds.</li>
           <li>Add speaker labels using Gnani&apos;s Batch API with diarization.</li>
-          <li>Resumable, multipart uploads, so a dropped connection doesn&apos;t restart a big upload from zero.</li>
+          <li>Upload straight from the browser to the bucket with presigned URLs (on storage that allows CORS), and make big uploads resumable.</li>
           <li>Summarise very long transcripts (several hours) in pieces, then combine the pieces.</li>
           <li>Accounts, so each person only sees their own uploads.</li>
           <li>Delete audio from the bucket automatically after 30 days.</li>

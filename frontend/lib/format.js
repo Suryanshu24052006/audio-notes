@@ -53,8 +53,6 @@ export const FINISHED = ["completed", "failed"];
 
 export function statusSummary(rec) {
   switch (rec.status) {
-    case "uploading":
-      return { text: "Uploading", tone: "muted" };
     case "queued":
       return { text: "Waiting to start", tone: "progress" };
     case "processing":

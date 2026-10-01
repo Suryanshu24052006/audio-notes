@@ -1,6 +1,5 @@
 import boto3
 from botocore.config import Config
-from botocore.exceptions import ClientError
 
 from . import config
 
@@ -10,27 +9,18 @@ s3 = boto3.client(
     region_name=config.S3_REGION,
     aws_access_key_id=config.S3_ACCESS_KEY_ID,
     aws_secret_access_key=config.S3_SECRET_ACCESS_KEY,
-    config=Config(signature_version="s3v4", s3={"addressing_style": "path"}),
+    config=Config(
+        signature_version="s3v4",
+        s3={"addressing_style": config.S3_ADDRESSING_STYLE},
+        # newer boto3 adds extra checksums by default, some s3-compatible stores reject them
+        request_checksum_calculation="when_required",
+        response_checksum_validation="when_required",
+    ),
 )
 
 
-def upload_url(key, content_type, expires_s=900):
-    # browser has to send the same Content-Type, it's part of the signature
-    return s3.generate_presigned_url(
-        "put_object",
-        Params={"Bucket": config.S3_BUCKET, "Key": key, "ContentType": content_type},
-        ExpiresIn=expires_s,
-    )
-
-
-def exists(key):
-    try:
-        s3.head_object(Bucket=config.S3_BUCKET, Key=key)
-        return True
-    except ClientError as e:
-        if e.response["Error"]["Code"] in ("404", "NoSuchKey", "NotFound"):
-            return False
-        raise
+def upload(fileobj, key, content_type):
+    s3.upload_fileobj(fileobj, config.S3_BUCKET, key, ExtraArgs={"ContentType": content_type})
 
 
 def download(key, path):

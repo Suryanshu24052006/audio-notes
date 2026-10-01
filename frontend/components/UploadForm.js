@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { api, uploadToStorage } from "../lib/api";
+import { uploadRecording } from "../lib/api";
 import { LANGUAGES, formatSize } from "../lib/format";
 
 export default function UploadForm() {
@@ -39,28 +39,12 @@ export default function UploadForm() {
     setUploading(true);
     setError("");
     setSent(0);
-    const contentType = file.type || "application/octet-stream";
-    let recordingId = null;
 
     try {
-      const created = await api("/recordings", {
-        method: "POST",
-        body: JSON.stringify({
-          filename: file.name,
-          content_type: contentType,
-          size_bytes: file.size,
-          language,
-        }),
-      });
-      recordingId = created.id;
-
-      await uploadToStorage(created.upload_url, file, contentType, (bytes) => setSent(bytes));
-      await api(`/recordings/${recordingId}/uploaded`, { method: "POST" });
-      router.push(`/recordings/${recordingId}`);
+      // progress is measured on the whole request, which is a bit bigger than the file
+      const created = await uploadRecording(file, language, (loaded, total) => setSent((loaded / total) * file.size));
+      router.push(`/recordings/${created.id}`);
     } catch (err) {
-      if (recordingId) {
-        api(`/recordings/${recordingId}/upload-failed`, { method: "POST" }).catch(() => {});
-      }
       setError(err.message);
       setUploading(false);
     }
@@ -112,7 +96,7 @@ export default function UploadForm() {
       {uploading && (
         <div className="upload-progress" aria-live="polite">
           <div className="row-between small">
-            <span>Uploading {file.name}</span>
+            <span>{percent < 100 ? `Uploading ${file.name}` : "Saving to storage…"}</span>
             <span className="mono muted">
               {percent}% · {formatSize(sent)} of {formatSize(file.size)}
             </span>

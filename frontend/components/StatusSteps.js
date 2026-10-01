@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 
-const CURRENT_STEP = { uploading: 0, queued: 1, processing: 1, transcribing: 3, summarizing: 4 };
+const CURRENT_STEP = { queued: 1, processing: 1, transcribing: 3, summarizing: 4 };
 
 export default function StatusSteps({ rec, lastChecked }) {
   const secondsAgo = useSecondsSince(lastChecked);
-  const current = CURRENT_STEP[rec.status] ?? 0;
+  const current = CURRENT_STEP[rec.status] ?? 1;
   const percent = rec.chunks_total ? Math.round((rec.chunks_done / rec.chunks_total) * 100) : 0;
 
   const steps = [

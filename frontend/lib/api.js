@@ -24,19 +24,24 @@ export async function api(path, options = {}) {
 }
 
 // using XHR here because fetch can't report upload progress
-export function uploadToStorage(url, file, contentType, onProgress) {
+export function uploadRecording(file, language, onProgress) {
   return new Promise((resolve, reject) => {
+    const form = new FormData();
+    form.append("file", file);
+    form.append("language", language);
+
     const xhr = new XMLHttpRequest();
-    xhr.open("PUT", url);
-    xhr.setRequestHeader("Content-Type", contentType); // has to match what the link was signed with
+    xhr.open("POST", API_URL + "/recordings");
+    xhr.responseType = "json";
     xhr.upload.onprogress = (event) => {
       if (event.lengthComputable) onProgress(event.loaded, event.total);
     };
     xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) resolve();
-      else reject(new Error(`Storage refused the upload (${xhr.status}). Please try again.`));
+      if (xhr.status >= 200 && xhr.status < 300) return resolve(xhr.response);
+      const detail = typeof xhr.response?.detail === "string" ? xhr.response.detail : null;
+      reject(new Error(detail || `The upload failed (${xhr.status}). Please try again.`));
     };
     xhr.onerror = () => reject(new Error("The upload was interrupted. Check your connection and try again."));
-    xhr.send(file);
+    xhr.send(form);
   });
 }

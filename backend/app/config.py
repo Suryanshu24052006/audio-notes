@@ -19,6 +19,10 @@ S3_REGION = os.getenv("S3_REGION", "auto")
 S3_BUCKET = required("S3_BUCKET")
 S3_ACCESS_KEY_ID = required("S3_ACCESS_KEY_ID")
 S3_SECRET_ACCESS_KEY = required("S3_SECRET_ACCESS_KEY")
+# railway buckets use virtual-hosted urls, local minio/supabase need "path"
+S3_ADDRESSING_STYLE = os.getenv("S3_ADDRESSING_STYLE", "virtual")
+
+MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "200"))
 
 # only the worker needs these, it checks them on startup
 GNANI_API_KEY = os.getenv("GNANI_API_KEY", "")

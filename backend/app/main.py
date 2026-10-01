@@ -2,9 +2,8 @@ import re
 import uuid
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
 
 from . import config, db, storage
 
@@ -26,13 +25,6 @@ app.add_middleware(
 )
 
 
-class NewRecording(BaseModel):
-    filename: str = Field(min_length=1, max_length=255)
-    content_type: str = Field(default="", max_length=100)
-    size_bytes: int = Field(gt=0)
-    language: str
-
-
 def safe_filename(name):
     cleaned = re.sub(r"[^A-Za-z0-9._-]+", "-", name).strip("-.")
     return cleaned[:100] or "audio"
@@ -51,52 +43,35 @@ def health():
 
 
 @app.post("/recordings", status_code=201)
-def create_recording(body: NewRecording):
-    if body.language not in config.LANGUAGES:
+def create_recording(file: UploadFile = File(...), language: str = Form(...)):
+    if language not in config.LANGUAGES:
         raise HTTPException(400, "That language isn't supported.")
+    size = file.size or 0
+    if size == 0:
+        raise HTTPException(400, "This file is empty.")
+    if size > config.MAX_UPLOAD_MB * 1024 * 1024:
+        raise HTTPException(413, f"This file is too big. The limit is {config.MAX_UPLOAD_MB} MB.")
 
-    content_type = body.content_type or "application/octet-stream"
-    key = f"recordings/{uuid.uuid4().hex}/{safe_filename(body.filename)}"
+    filename = (file.filename or "audio")[:255]
+    content_type = file.content_type or "application/octet-stream"
+    key = f"recordings/{uuid.uuid4().hex}/{safe_filename(filename)}"
+
+    # bucket first, so a row only exists if the file was actually saved
+    try:
+        storage.upload(file.file, key, content_type)
+    except Exception:
+        raise HTTPException(502, "We couldn't save the file to storage. Please try again.")
 
     with db.pool.connection() as conn:
         row = conn.execute(
             """
-            INSERT INTO recordings (filename, content_type, size_bytes, language, storage_key)
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO recordings (filename, content_type, size_bytes, language, storage_key, status)
+            VALUES (%s, %s, %s, %s, %s, 'queued')
             RETURNING id
             """,
-            (body.filename, content_type, body.size_bytes, body.language, key),
+            (filename, content_type, size, language, key),
         ).fetchone()
-
-    # the browser uploads straight to the bucket with this link
-    return {"id": row["id"], "upload_url": storage.upload_url(key, content_type)}
-
-
-@app.post("/recordings/{recording_id}/uploaded")
-def mark_uploaded(recording_id: int):
-    with db.pool.connection() as conn:
-        rec = get_recording_or_404(conn, recording_id)
-    if rec["status"] != "uploading":
-        raise HTTPException(409, "This recording isn't waiting for an upload.")
-    if not storage.exists(rec["storage_key"]):
-        raise HTTPException(400, "The file never reached storage. Please upload it again.")
-
-    db.update_recording(recording_id, status="queued")
-    return {"status": "queued"}
-
-
-@app.post("/recordings/{recording_id}/upload-failed")
-def mark_upload_failed(recording_id: int):
-    with db.pool.connection() as conn:
-        rec = get_recording_or_404(conn, recording_id)
-    if rec["status"] == "uploading":
-        db.update_recording(
-            recording_id,
-            status="failed",
-            error="The upload didn't finish. Please upload the file again.",
-            can_retry=False,
-        )
-    return {"status": "failed"}
+    return {"id": row["id"]}
 
 
 @app.get("/recordings")

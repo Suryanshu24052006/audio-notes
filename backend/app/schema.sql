@@ -5,8 +5,8 @@ CREATE TABLE IF NOT EXISTS recordings (
     size_bytes    BIGINT      NOT NULL,
     language      TEXT        NOT NULL,
     storage_key   TEXT        NOT NULL,
-    -- uploading -> queued -> processing -> transcribing -> summarizing -> completed (or failed)
-    status        TEXT        NOT NULL DEFAULT 'uploading',
+    -- queued -> processing -> transcribing -> summarizing -> completed (or failed)
+    status        TEXT        NOT NULL DEFAULT 'queued',
     duration_s    REAL,
     chunks_total  INT         NOT NULL DEFAULT 0,
     chunks_done   INT         NOT NULL DEFAULT 0,
