@@ -1,0 +1,15 @@
+.env
+.env.local
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+node_modules/
+.next/
+
+# test recordings
+*.mp3
+*.mp4
+*.m4a
+*.wav
+*.webm
