@@ -57,6 +57,10 @@ def ask_gemini(transcript, model):
         raise TryAgain("timed out")
     except requests.ConnectionError:
         raise TryAgain("couldn't connect")
+    except requests.RequestException:
+        # e.g. a bad character in the key. don't put the exception text in the message,
+        # it can contain the key and this message ends up on the website
+        raise SummaryError("Couldn't send the request to the summary service. Check LLM_API_KEY.")
 
     if response.status_code in RETRY_STATUSES:
         raise TryAgain(f"HTTP {response.status_code}: {error_message(response)}")

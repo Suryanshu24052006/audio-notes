@@ -36,6 +36,12 @@ def transcribe(wav_path, language):
         except requests.ConnectionError:
             problem = "couldn't connect"
             continue
+        except requests.RequestException:
+            # same as in summarize.py - the exception text can contain the key
+            raise GnaniError(
+                "Couldn't send the request to the transcription service. Check GNANI_API_KEY.",
+                retryable=True,
+            )
 
         if response.status_code in RETRY_STATUSES:
             problem = f"HTTP {response.status_code}"
