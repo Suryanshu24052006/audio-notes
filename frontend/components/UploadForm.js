@@ -5,6 +5,15 @@ import { useEffect, useState } from "react";
 import { uploadRecording } from "../lib/api";
 import { LANGUAGES, formatSize } from "../lib/format";
 
+// same limit as MAX_UPLOAD_MB on the backend, checked here too so a big file fails straight away
+const MAX_MB = 200;
+
+function fileProblem(file) {
+  if (file.size === 0) return "This file is empty. Choose another one.";
+  if (file.size > MAX_MB * 1024 * 1024) return `This file is ${formatSize(file.size)}. The limit is ${MAX_MB} MB.`;
+  return "";
+}
+
 export default function UploadForm() {
   const router = useRouter();
   const [file, setFile] = useState(null);
@@ -28,13 +37,14 @@ export default function UploadForm() {
     const chosen = event.target.files?.[0] || null;
     setFile(chosen);
     setSent(0);
-    setError(chosen && chosen.size === 0 ? "This file is empty. Choose another one." : "");
+    setError(chosen ? fileProblem(chosen) : "");
   }
 
   async function handleSubmit(event) {
     event.preventDefault();
     if (!file) return setError("Choose an audio file first.");
-    if (file.size === 0) return setError("This file is empty. Choose another one.");
+    const problem = fileProblem(file);
+    if (problem) return setError(problem);
 
     setUploading(true);
     setError("");

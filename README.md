@@ -3,6 +3,7 @@
 Upload an audio recording (any length), get back a transcript from Gnani's speech-to-text API
 and a summary from Gemini. Past uploads are saved and can be reopened.
 
+**Live:** https://audio-notes-phi.vercel.app (how it works: [/architecture](https://audio-notes-phi.vercel.app/architecture))
 
 ```
 frontend/   Next.js - upload page, recording page, /architecture

@@ -366,6 +366,29 @@ th.num {
   color: var(--muted);
   padding-top: 3px;
 }
+.part.playing {
+  background: var(--soft);
+  box-shadow: 0 0 0 8px var(--soft);
+  border-radius: 2px;
+}
+.time-button {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--link);
+  background: none;
+  border: 0;
+  padding: 3px 0 0;
+  text-align: left;
+  align-self: start;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.time-button:hover {
+  color: var(--link-hover);
+}
+.player {
+  width: 100%;
+}
 
 /* architecture page */
 .prose {

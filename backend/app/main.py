@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 
 from . import config, db, storage
 
@@ -103,6 +104,14 @@ def get_recording(recording_id: int):
         ).fetchall()
     rec.pop("storage_key")
     return {**rec, "parts": parts}
+
+
+@app.get("/recordings/{recording_id}/audio")
+def get_audio(recording_id: int):
+    with db.pool.connection() as conn:
+        rec = get_recording_or_404(conn, recording_id)
+    # redirect instead of streaming it ourselves, so the audio doesn't go through the api
+    return RedirectResponse(storage.playback_url(rec["storage_key"]))
 
 
 @app.post("/recordings/{recording_id}/retry")

@@ -54,7 +54,9 @@ export default function ArchitecturePage() {
           They are never kept on the server&apos;s own disk, because that disk is wiped on every
           deploy, and the API and the worker run on separate machines that can&apos;t share it. The
           worker downloads a file into a temporary folder while it works on it and deletes the
-          folder when it&apos;s done.
+          folder when it&apos;s done. The player on the recording page asks the API for the audio,
+          and the API redirects it to a temporary signed link to the file in the bucket, so the
+          audio doesn&apos;t stream through the API.
         </p>
         <p>
           Uploads go through the API instead of straight from the browser to the bucket. My first

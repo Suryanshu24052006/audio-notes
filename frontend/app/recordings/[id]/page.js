@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import StatusSteps from "../../../components/StatusSteps";
 import Summary from "../../../components/Summary";
 import Transcript from "../../../components/Transcript";
 import { api } from "../../../lib/api";
 import { FINISHED, formatDuration, formatSize, languageName, timeAgo } from "../../../lib/format";
+import { API_URL } from "../../../lib/site";
 
 const POLL_MS = 2000;
 
@@ -20,6 +21,14 @@ export default function RecordingPage() {
   const [pollRound, setPollRound] = useState(0); // restarts polling after a retry
   const [retrying, setRetrying] = useState(false);
   const [retryError, setRetryError] = useState("");
+  const audioRef = useRef(null);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [canPlay, setCanPlay] = useState(true);
+
+  const filename = rec?.filename;
+  useEffect(() => {
+    if (filename) document.title = `${filename} · audio notes`;
+  }, [filename]);
 
   useEffect(() => {
     let stopped = false;
@@ -64,6 +73,13 @@ export default function RecordingPage() {
     setRetrying(false);
   }
 
+  function seek(seconds) {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.currentTime = seconds;
+    audio.play().catch(() => {});
+  }
+
   if (notFound) {
     return (
       <div className="stack">
@@ -98,6 +114,19 @@ export default function RecordingPage() {
         <p className="muted small">{details}</p>
       </div>
 
+      {/* the api redirects this to a temporary link to the file in the bucket */}
+      {canPlay && (
+        <audio
+          ref={audioRef}
+          className="player"
+          controls
+          preload="metadata"
+          src={`${API_URL}/recordings/${id}/audio`}
+          onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+          onError={() => setCanPlay(false)}
+        />
+      )}
+
       {connectionError && (
         <p className="notice-warn">{connectionError} Trying again every 2 seconds.</p>
       )}
@@ -112,7 +141,7 @@ export default function RecordingPage() {
         <Summary rec={rec} onRetry={retry} retrying={retrying} retryError={retryError} />
       )}
 
-      <Transcript rec={rec} />
+      <Transcript rec={rec} currentTime={currentTime} onSeek={canPlay ? seek : null} />
     </>
   );
 }

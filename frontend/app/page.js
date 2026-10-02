@@ -37,8 +37,8 @@ export default function HomePage() {
       <section className="stack">
         <h1>Upload a recording</h1>
         <p className="muted">
-          MP3, WAV, M4A, OGG, FLAC, AAC or WEBM, any length. Long recordings are cut into short
-          parts and transcribed one by one, so you can watch the progress.
+          MP3, WAV, M4A, OGG, FLAC, AAC or WEBM, any length, up to 200 MB. Long recordings are cut
+          into short parts and transcribed one by one, so you can watch the progress.
         </p>
       </section>
 

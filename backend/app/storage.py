@@ -25,3 +25,12 @@ def upload(fileobj, key, content_type):
 
 def download(key, path):
     s3.download_file(config.S3_BUCKET, key, str(path))
+
+
+def playback_url(key, expires_s=6 * 3600):
+    # temporary link so the browser's audio player can read the file straight from the bucket
+    return s3.generate_presigned_url(
+        "get_object",
+        Params={"Bucket": config.S3_BUCKET, "Key": key},
+        ExpiresIn=expires_s,
+    )
