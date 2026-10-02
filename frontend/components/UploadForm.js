@@ -6,12 +6,11 @@ import { uploadRecording } from "../lib/api";
 import { LANGUAGES, formatSize } from "../lib/format";
 import Waveform from "./Waveform";
 
-// same limit as MAX_UPLOAD_MB on the backend, checked here too so a big file fails straight away
+// same as MAX_UPLOAD_MB on the backend
 const MAX_MB = 200;
 
 function fileProblem(file) {
-  // the accept list on the input doesn't apply to dropped files, so check the type here.
-  // video is allowed because phones often save voice notes as .mp4 / .webm
+  // accept="" doesn't apply to dropped files. video/* is ok, phones save voice notes as mp4
   const type = file.type || "";
   if (type && !type.startsWith("audio/") && !type.startsWith("video/")) {
     return `${file.name} isn't an audio file. Choose an MP3, WAV, M4A or similar.`;
@@ -47,7 +46,7 @@ export default function UploadForm() {
     setError(chosen ? fileProblem(chosen) : "");
   }
 
-  // drag and drop: preventDefault stops the browser from just opening the file
+  // without preventDefault the browser just opens the dropped file
   function onDragOver(event) {
     event.preventDefault();
     if (!uploading) setDragging(true);
@@ -72,7 +71,7 @@ export default function UploadForm() {
     setSent(0);
 
     try {
-      // progress is measured on the whole request, which is a bit bigger than the file
+      // total is the whole request, a bit more than the file size
       const created = await uploadRecording(file, language, (loaded, total) => setSent((loaded / total) * file.size));
       router.push(`/recordings/${created.id}`);
     } catch (err) {
@@ -146,7 +145,7 @@ export default function UploadForm() {
       {error && <p className="inline-error" role="alert">{error}</p>}
 
       {uploading && (
-        <p className="upload-status small" aria-live="polite">
+        <p className="upload-status small">
           <span>{percent < 100 ? "Uploading…" : "Saving to storage…"}</span>
           <span className="muted nums">
             {formatSize(sent)} of {formatSize(file.size)} ({percent}%)

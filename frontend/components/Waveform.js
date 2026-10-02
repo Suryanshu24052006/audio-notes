@@ -1,10 +1,9 @@
-// made-up bar heights (in %) that look a bit like speech. worked out once with a formula
-// instead of Math.random, so the server and the browser draw the same bars
-const HEIGHTS = Array.from({ length: 64 }, (_, i) =>
-  Math.round(18 + 62 * Math.abs(Math.sin(i * 0.9) * Math.cos(i * 0.31)) + (i % 5) * 4)
-);
+// just made-up heights (%) so it looks like a sound wave. 32 bars, drawn twice
+const SHAPE = [30, 55, 40, 70, 45, 85, 60, 35, 50, 90, 65, 40, 75, 55, 30, 45,
+  80, 60, 95, 50, 35, 65, 85, 45, 55, 70, 40, 60, 90, 50, 35, 25];
+const HEIGHTS = [...SHAPE, ...SHAPE];
 
-// filled: how much is coloured in, from 0 to 1. the upload form uses it as the progress bar
+// filled = 0 to 1, how much of the upload is done
 export default function Waveform({ filled = 0, state = "idle" }) {
   const lit = Math.round(filled * HEIGHTS.length);
 

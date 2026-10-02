@@ -119,7 +119,6 @@ main.wrap {
   flex-direction: column;
   gap: 24px;
 }
-/* white panels on the grey page */
 .card {
   background: #fff;
   border: 1px solid var(--line-soft);
@@ -278,8 +277,7 @@ select {
   text-decoration: underline;
 }
 
-/* upload form: the drop area is a <label> for the hidden file input,
-   so clicking anywhere on it opens the file picker */
+/* upload box. it's a <label> for the hidden file input so the whole box is clickable */
 .upload {
   display: flex;
   flex-direction: column;
@@ -318,7 +316,7 @@ select {
   border-color: var(--link);
   background: var(--link-soft);
 }
-/* stops dragleave firing every time the pointer moves over the text inside */
+/* otherwise dragleave fires when moving over the text inside */
 .drop-dragging * {
   pointer-events: none;
 }
@@ -347,7 +345,7 @@ select {
   gap: 8px;
 }
 
-/* the waveform bars. lit bars are the part that's been uploaded */
+/* waveform */
 .wave {
   display: flex;
   align-items: center;
@@ -754,7 +752,6 @@ pre.flow {
     max-width: none;
     flex-basis: 100%;
   }
-  /* 64 bars need thinner gaps to fit a phone screen */
   .wave {
     gap: 2px;
   }
@@ -767,7 +764,7 @@ pre.flow {
   .upload-row .button {
     flex: 1 1 100%;
   }
-  /* on a phone keep only file, length and status so nothing scrolls sideways */
+  /* phone: hide language and date columns */
   .uploads {
     min-width: 0;
   }

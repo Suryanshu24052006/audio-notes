@@ -23,7 +23,7 @@ export default function RecordingTable({ recordings }) {
 
   const rows = recordings.map((rec) => ({ rec, status: statusSummary(rec) }));
 
-  // how many recordings each filter button would show
+  // counts for the filter buttons
   const counts = { all: rows.length };
   for (const { status } of rows) counts[status.group] = (counts[status.group] || 0) + 1;
 
@@ -45,11 +45,11 @@ export default function RecordingTable({ recordings }) {
           type="search"
           className="search"
           placeholder="Search by file name"
-          aria-label="Search past uploads by file name"
+          aria-label="Search"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
-        <div className="filters" role="group" aria-label="Show uploads by status">
+        <div className="filters">
           {FILTERS.map((f) => (
             <button
               key={f.key}
@@ -83,8 +83,7 @@ export default function RecordingTable({ recordings }) {
             </thead>
             <tbody>
               {shown.map(({ rec, status }) => (
-                // clicking anywhere on the row opens it. the link stays for keyboard users,
-                // and stopPropagation so ctrl+click on the link doesn't also open it here
+                // whole row is clickable, the link is still there for ctrl+click
                 <tr key={rec.id} onClick={() => router.push(`/recordings/${rec.id}`)}>
                   <td className="file">
                     <Link href={`/recordings/${rec.id}`} onClick={(event) => event.stopPropagation()}>
@@ -111,7 +110,7 @@ function StatusPill({ rec, status }) {
     <span className="status-cell">
       <span className={`pill pill-${status.tone}`}>{status.text}</span>
       {rec.status === "transcribing" && (
-        <span className="mini-bar" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100}>
+        <span className="mini-bar">
           <span style={{ width: `${percent}%` }} />
         </span>
       )}

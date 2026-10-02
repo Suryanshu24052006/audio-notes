@@ -25,14 +25,12 @@ export default function StatusSteps({ rec, lastChecked }) {
           const state = i < current ? "done" : i === current ? "now" : "next";
           return (
             <li key={i} className={`step step-${state}`}>
-              {/* the dot shows the state; the hidden word is for screen readers */}
-              <span className="step-dot" aria-hidden="true" />
-              <span className="visually-hidden">{state}: </span>
+              <span className="step-dot" />
               <div className="step-body">
                 <span className="step-label">{label}</span>
                 {i === 3 && state === "now" && (
                   <>
-                    <div className="bar" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100}>
+                    <div className="bar">
                       <div style={{ width: `${percent}%` }} />
                     </div>
                     <span className="small muted nums">
