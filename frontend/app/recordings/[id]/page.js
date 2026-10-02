@@ -103,15 +103,17 @@ export default function RecordingPage() {
     languageName(rec.language),
     rec.duration_s ? formatDuration(rec.duration_s) : null,
     formatSize(rec.size_bytes),
-    `uploaded ${timeAgo(rec.created_at)}`,
-  ].filter(Boolean).join(" · ");
+    `Uploaded ${timeAgo(rec.created_at)}`,
+  ].filter(Boolean);
 
   return (
     <>
       <div className="stack">
-        <Link href="/">← All uploads</Link>
+        <Link href="/" className="back-link">← All uploads</Link>
         <h1>{rec.filename}</h1>
-        <p className="muted small">{details}</p>
+        <ul className="details">
+          {details.map((d) => <li key={d}>{d}</li>)}
+        </ul>
       </div>
 
       {/* the api redirects this to a temporary link to the file in the bucket */}

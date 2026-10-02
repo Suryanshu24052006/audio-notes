@@ -24,19 +24,19 @@ export default function StatusSteps({ rec, lastChecked }) {
         {steps.map((label, i) => {
           const state = i < current ? "done" : i === current ? "now" : "next";
           return (
-            <li key={i}>
-              <span className={`step-state state-${state}`}>{state}</span>
+            <li key={i} className={`step step-${state}`}>
+              {/* the dot shows the state; the hidden word is for screen readers */}
+              <span className="step-dot" aria-hidden="true" />
+              <span className="visually-hidden">{state}: </span>
               <div className="step-body">
-                <span style={state === "now" ? { fontWeight: 600 } : state === "next" ? { color: "var(--muted)" } : undefined}>
-                  {label}
-                </span>
+                <span className="step-label">{label}</span>
                 {i === 3 && state === "now" && (
                   <>
                     <div className="bar" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100}>
                       <div style={{ width: `${percent}%` }} />
                     </div>
-                    <span className="small muted">
-                      {rec.chunks_done} of {rec.chunks_total} parts done · {percent}%
+                    <span className="small muted nums">
+                      {rec.chunks_done} of {rec.chunks_total} parts done ({percent}%)
                     </span>
                   </>
                 )}

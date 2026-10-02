@@ -1,6 +1,10 @@
 "use client";
 
+import { useState } from "react";
+
 export default function Summary({ rec, onRetry, retrying, retryError }) {
+  const [copied, setCopied] = useState("");
+
   if (rec.summary_error) {
     return (
       <section className="notice notice-error" role="alert">
@@ -28,9 +32,24 @@ export default function Summary({ rec, onRetry, retrying, retryError }) {
   const sentences = lines.filter((line) => !isPoint(line));
   const points = lines.filter(isPoint).map((line) => line.replace(/^[-*•]\s+/, ""));
 
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(rec.summary);
+      setCopied("Copied");
+    } catch {
+      setCopied("Couldn't copy");
+    }
+    setTimeout(() => setCopied(""), 2500);
+  }
+
   return (
     <section className="summary">
-      <h2>Summary</h2>
+      <div className="section-head">
+        <h2>Summary</h2>
+        <button type="button" className="button-small" onClick={copy}>
+          {copied || "Copy summary"}
+        </button>
+      </div>
       {sentences.map((text, i) => <p key={i}>{text}</p>)}
       {points.length > 0 && (
         <ul>

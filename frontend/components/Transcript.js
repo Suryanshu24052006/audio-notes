@@ -17,9 +17,9 @@ export default function Transcript({ rec, currentTime, onSeek }) {
       await navigator.clipboard.writeText(rec.transcript);
       setCopyMessage("Copied");
     } catch {
-      setCopyMessage("Couldn't copy. Select the text and copy it instead.");
+      setCopyMessage("Couldn't copy");
     }
-    setTimeout(() => setCopyMessage(""), 3000);
+    setTimeout(() => setCopyMessage(""), 2500);
   }
 
   function download() {
@@ -34,7 +34,15 @@ export default function Transcript({ rec, currentTime, onSeek }) {
   return (
     <section className="stack-lg">
       <div className="stack" style={{ gap: 2 }}>
-        <h2>{finished ? "Transcript" : "Transcript so far"}</h2>
+        <div className="section-head">
+          <h2>{finished ? "Transcript" : "Transcript so far"}</h2>
+          {finished && (
+            <div className="actions">
+              <button type="button" className="button-small" onClick={copy}>{copyMessage || "Copy"}</button>
+              <button type="button" className="button-small" onClick={download}>Download .txt</button>
+            </div>
+          )}
+        </div>
         <p className="small muted">
           {!finished
             ? `Parts appear here as they finish: ${parts.length} of ${rec.chunks_total} so far.`
@@ -43,14 +51,6 @@ export default function Transcript({ rec, currentTime, onSeek }) {
               : "Each time shows where that part starts in the recording."}
         </p>
       </div>
-
-      {finished && (
-        <div className="actions">
-          <button className="button button-plain" onClick={copy}>Copy transcript</button>
-          <button className="button button-plain" onClick={download}>Download as .txt</button>
-          {copyMessage && <span className="small muted" style={{ alignSelf: "center" }}>{copyMessage}</span>}
-        </div>
-      )}
 
       <div className="parts">
         {parts.map((p) => {

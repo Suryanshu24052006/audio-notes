@@ -51,21 +51,22 @@ export function timeAgo(iso) {
 
 export const FINISHED = ["completed", "failed"];
 
+// tone picks the colour, group is used by the filter buttons on the home page
 export function statusSummary(rec) {
   switch (rec.status) {
     case "queued":
-      return { text: "Waiting to start", tone: "progress" };
+      return { text: "Waiting to start", tone: "progress", group: "progress" };
     case "processing":
-      return { text: "Preparing audio", tone: "progress" };
+      return { text: "Preparing audio", tone: "progress", group: "progress" };
     case "transcribing":
-      return { text: `Transcribing · ${rec.chunks_done} of ${rec.chunks_total} parts`, tone: "progress" };
+      return { text: `Transcribing ${rec.chunks_done}/${rec.chunks_total}`, tone: "progress", group: "progress" };
     case "summarizing":
-      return { text: "Writing summary", tone: "progress" };
+      return { text: "Writing summary", tone: "progress", group: "progress" };
     case "completed":
       return rec.summary_error
-        ? { text: "Done, summary failed", tone: "failed" }
-        : { text: "Done", tone: "done" };
+        ? { text: "Done, no summary", tone: "failed", group: "done" }
+        : { text: "Done", tone: "done", group: "done" };
     default:
-      return { text: "Failed", tone: "failed" };
+      return { text: "Failed", tone: "failed", group: "failed" };
   }
 }
