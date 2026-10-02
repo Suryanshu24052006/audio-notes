@@ -85,7 +85,7 @@ export default function UploadForm() {
   const waveState = dragging ? "dragging" : uploading ? "uploading" : file && !error ? "ready" : "idle";
 
   return (
-    <form className="upload" onSubmit={handleSubmit}>
+    <form className="upload card" onSubmit={handleSubmit}>
       <label
         className={`drop drop-${waveState}`}
         onDragOver={onDragOver}

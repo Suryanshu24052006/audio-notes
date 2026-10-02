@@ -44,7 +44,7 @@ export default function HomePage() {
 
       <UploadForm />
 
-      <section className="stack-lg">
+      <section className="card stack-lg">
         <h2>Past uploads</h2>
         {error && <p className="notice-warn">{error}</p>}
         {recordings === null

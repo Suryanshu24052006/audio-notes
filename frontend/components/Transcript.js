@@ -32,7 +32,7 @@ export default function Transcript({ rec, currentTime, onSeek }) {
   }
 
   return (
-    <section className="stack-lg">
+    <section className="card stack-lg">
       <div className="stack" style={{ gap: 2 }}>
         <div className="section-head">
           <h2>{finished ? "Transcript" : "Transcript so far"}</h2>
