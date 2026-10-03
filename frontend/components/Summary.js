@@ -10,13 +10,11 @@ export default function Summary({ rec, onRetry, retrying, retryError }) {
       <section className="notice notice-error" role="alert">
         <h2>The summary couldn't be written</h2>
         <p>{rec.summary_error} The transcript below is complete.</p>
-        {!rec.example && (
-          <div className="actions">
-            <button className="button" onClick={onRetry} disabled={retrying}>
-              {retrying ? "Retrying…" : "Retry summary"}
-            </button>
-          </div>
-        )}
+        <div className="actions">
+          <button className="button" onClick={onRetry} disabled={retrying}>
+            {retrying ? "Retrying…" : "Retry summary"}
+          </button>
+        </div>
         {retryError && <p className="inline-error">{retryError}</p>}
       </section>
     );

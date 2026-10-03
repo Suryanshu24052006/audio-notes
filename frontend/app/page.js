@@ -47,7 +47,7 @@ export default function HomePage() {
       <section className="card stack-lg">
         <div className="stack" style={{ gap: 2 }}>
           <h2>Past uploads</h2>
-          <p className="small muted">Your uploads are private to this browser. The examples are visible to everyone.</p>
+          <p className="small muted">Your uploads are private. Only this browser can see them.</p>
         </div>
         {error && <p className="notice-warn">{error}</p>}
         {recordings === null

@@ -179,7 +179,7 @@ function FailureNotice({ rec, onRetry, retrying, retryError }) {
       )}
 
       <div className="actions">
-        {rec.can_retry && !rec.example ? (
+        {rec.can_retry ? (
           <button className="button" onClick={onRetry} disabled={retrying}>
             {retrying ? "Retrying…" : "Retry"}
           </button>

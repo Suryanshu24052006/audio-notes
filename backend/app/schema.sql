@@ -40,6 +40,6 @@ CREATE TABLE IF NOT EXISTS chunks (
 
 CREATE INDEX IF NOT EXISTS recordings_status_created_idx ON recordings (status, created_at);
 
--- who uploaded it. NULL = one of the examples everyone can see
+-- who uploaded it. NULL = uploaded before sessions were added, and nobody can see those
 ALTER TABLE recordings ADD COLUMN IF NOT EXISTS session_id TEXT REFERENCES sessions(id) ON DELETE CASCADE;
 CREATE INDEX IF NOT EXISTS recordings_session_idx ON recordings (session_id, created_at);

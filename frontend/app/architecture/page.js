@@ -104,8 +104,9 @@ export default function ArchitecturePage() {
         </p>
         <p>
           Every request sends the token in an <code>X-Session</code> header, and the API only
-          returns your own recordings, plus a few examples I uploaded that everyone can see.
-          Someone else&apos;s recording gives 404, even if you guess its number.
+          returns recordings made in that browser. Someone else&apos;s recording gives 404, even if
+          you guess its number. Recordings uploaded before I added sessions don&apos;t belong to
+          any browser, so nobody sees them.
         </p>
         <p>
           I first wanted to keep the session id in a cookie. The problem is that the site

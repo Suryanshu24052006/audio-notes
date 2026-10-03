@@ -49,13 +49,9 @@ def current_session(x_session: str | None = Header(default=None)):
 
 
 def get_recording_or_404(conn, recording_id, session):
-    # your own recordings and the examples. someone else's gives 404, same as one that doesn't exist
+    # only recordings from your own session. someone else's gives 404, same as one that doesn't exist
     row = conn.execute(
-        """
-        SELECT *, (session_id IS NULL) AS example
-        FROM recordings
-        WHERE id = %s AND (session_id IS NULL OR session_id = %s)
-        """,
+        "SELECT * FROM recordings WHERE id = %s AND session_id = %s",
         (recording_id, session),
     ).fetchone()
     if row is None:
@@ -117,9 +113,9 @@ def list_recordings(session=Depends(current_session)):
         return conn.execute(
             """
             SELECT id, filename, language, duration_s, status, chunks_done, chunks_total,
-                   error, summary_error, created_at, (session_id IS NULL) AS example
+                   error, summary_error, created_at
             FROM recordings
-            WHERE session_id IS NULL OR session_id = %s
+            WHERE session_id = %s
             ORDER BY created_at DESC
             LIMIT 100
             """,
@@ -158,8 +154,6 @@ def get_audio_url(recording_id: int, session=Depends(current_session)):
 def retry(recording_id: int, session=Depends(current_session)):
     with db.pool.connection() as conn:
         rec = get_recording_or_404(conn, recording_id, session)
-        if rec["example"]:
-            raise HTTPException(403, "Examples can't be retried.")
         failed = rec["status"] == "failed" and rec["can_retry"]
         summary_failed = rec["status"] == "completed" and rec["summary_error"]
         if not (failed or summary_failed):
