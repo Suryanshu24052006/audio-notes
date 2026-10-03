@@ -512,6 +512,19 @@ th.num {
   color: var(--link);
   text-decoration: underline;
 }
+.tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 0 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--muted);
+  vertical-align: 1px;
+}
+.uploads .col-date {
+  white-space: nowrap;
+}
 .status-cell {
   display: inline-flex;
   flex-direction: column;

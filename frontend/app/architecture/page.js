@@ -81,9 +81,9 @@ export default function ArchitecturePage() {
           row per part of the audio.
         </p>
         <p>
-          The audio player on the recording page doesn&apos;t stream through my API. The API just
-          redirects the browser to a temporary signed link to the file (valid for 6 hours), and the
-          browser plays it straight from the bucket.
+          The audio player on the recording page doesn&apos;t stream through my API. The page asks
+          the API for a temporary signed link to the file (valid for 6 hours), and the browser plays
+          it straight from the bucket.
         </p>
         <p>
           My first version had the browser upload straight to the bucket with presigned URLs, so the
@@ -91,6 +91,27 @@ export default function ArchitecturePage() {
           (Supabase) blocked uploads from the browser with a CORS error, and its free plan caps files
           at 50 MB. So now the file goes browser → API → bucket. It&apos;s simpler, and the cost is
           that the API has to handle the upload. I set the limit to 200 MB.
+        </p>
+      </section>
+
+      <section className="prose">
+        <h2>Who can see what</h2>
+        <p>
+          Each browser gets its own private session, with no sign-up. The first time you open the
+          site, the API creates a session and gives the browser a random token, which it keeps in
+          localStorage. The database only stores a SHA-256 hash of that token, so even a copy of the
+          database wouldn&apos;t give anyone a working token.
+        </p>
+        <p>
+          Every request sends the token in an <code>X-Session</code> header, and the API only
+          returns your own recordings, plus a few examples I uploaded that everyone can see.
+          Someone else&apos;s recording gives 404, even if you guess its number.
+        </p>
+        <p>
+          I first wanted to keep the session id in a cookie. The problem is that the site
+          (vercel.app) and the API (railway.app) are on different domains, and Safari blocks cookies
+          across domains by default, so the app would have broken on Macs and iPhones. With one
+          shared domain I&apos;d switch to an HttpOnly cookie, which JavaScript can&apos;t read.
         </p>
       </section>
 
@@ -126,6 +147,7 @@ export default function ArchitecturePage() {
         <p>Synchronously, inside the web request:</p>
         <ul>
           <li>saving the upload to the bucket and creating the database row</li>
+          <li>creating a session, and checking it on every request</li>
           <li>returning a recording&apos;s status, transcript and summary</li>
           <li>listing past uploads, and giving out the audio link for the player</li>
         </ul>
@@ -198,7 +220,8 @@ export default function ArchitecturePage() {
           <li>Add speaker labels with Gnani&apos;s Batch API.</li>
           <li>Resumable uploads straight to the bucket, on storage that allows it, for really big files.</li>
           <li>Summarise very long transcripts in pieces and then combine them.</li>
-          <li>Accounts, so people only see their own uploads, and delete old audio after 30 days.</li>
+          <li>Real accounts with login, so your uploads follow you to other devices, and the session in an HttpOnly cookie on one shared domain.</li>
+          <li>Delete old audio after 30 days, and delete a recording&apos;s file from the bucket when the recording is deleted.</li>
           <li>More tests. Right now only the cutting logic has unit tests.</li>
         </ul>
       </section>

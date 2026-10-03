@@ -89,6 +89,7 @@ export default function RecordingTable({ recordings }) {
                     <Link href={`/recordings/${rec.id}`} onClick={(event) => event.stopPropagation()}>
                       {rec.filename}
                     </Link>
+                    {rec.example && <span className="tag">example</span>}
                   </td>
                   <td className="col-lang">{languageName(rec.language)}</td>
                   <td className="num">{formatDuration(rec.duration_s)}</td>

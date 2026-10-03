@@ -8,7 +8,6 @@ import Summary from "../../../components/Summary";
 import Transcript from "../../../components/Transcript";
 import { api } from "../../../lib/api";
 import { FINISHED, formatDuration, formatSize, languageName, timeAgo } from "../../../lib/format";
-import { API_URL } from "../../../lib/site";
 
 const POLL_MS = 2000;
 
@@ -24,11 +23,23 @@ export default function RecordingPage() {
   const audioRef = useRef(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [canPlay, setCanPlay] = useState(true);
+  const [audioUrl, setAudioUrl] = useState(null);
 
   const filename = rec?.filename;
   useEffect(() => {
     if (filename) document.title = `${filename} · audio notes`;
   }, [filename]);
+
+  // the <audio> tag can't send our session header, so ask the api for a signed link first
+  useEffect(() => {
+    let stopped = false;
+    api(`/recordings/${id}/audio-url`)
+      .then((data) => !stopped && setAudioUrl(data.url))
+      .catch(() => !stopped && setCanPlay(false));
+    return () => {
+      stopped = true;
+    };
+  }, [id]);
 
   useEffect(() => {
     let stopped = false;
@@ -116,14 +127,13 @@ export default function RecordingPage() {
         </ul>
       </div>
 
-      {/* the api redirects this to a temporary link to the file in the bucket */}
-      {canPlay && (
+      {canPlay && audioUrl && (
         <audio
           ref={audioRef}
           className="player"
           controls
           preload="metadata"
-          src={`${API_URL}/recordings/${id}/audio`}
+          src={audioUrl}
           onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
           onError={() => setCanPlay(false)}
         />
@@ -143,7 +153,7 @@ export default function RecordingPage() {
         <Summary rec={rec} onRetry={retry} retrying={retrying} retryError={retryError} />
       )}
 
-      <Transcript rec={rec} currentTime={currentTime} onSeek={canPlay ? seek : null} />
+      <Transcript rec={rec} currentTime={currentTime} onSeek={canPlay && audioUrl ? seek : null} />
     </>
   );
 }
@@ -169,7 +179,7 @@ function FailureNotice({ rec, onRetry, retrying, retryError }) {
       )}
 
       <div className="actions">
-        {rec.can_retry ? (
+        {rec.can_retry && !rec.example ? (
           <button className="button" onClick={onRetry} disabled={retrying}>
             {retrying ? "Retrying…" : "Retry"}
           </button>

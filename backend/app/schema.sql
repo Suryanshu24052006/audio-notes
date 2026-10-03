@@ -1,3 +1,10 @@
+-- one row per browser. id is the sha256 of the token the browser keeps, never the token itself
+CREATE TABLE IF NOT EXISTS sessions (
+    id          TEXT        PRIMARY KEY,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    last_seen   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS recordings (
     id            BIGSERIAL PRIMARY KEY,
     filename      TEXT        NOT NULL,
@@ -32,3 +39,7 @@ CREATE TABLE IF NOT EXISTS chunks (
 );
 
 CREATE INDEX IF NOT EXISTS recordings_status_created_idx ON recordings (status, created_at);
+
+-- who uploaded it. NULL = one of the examples everyone can see
+ALTER TABLE recordings ADD COLUMN IF NOT EXISTS session_id TEXT REFERENCES sessions(id) ON DELETE CASCADE;
+CREATE INDEX IF NOT EXISTS recordings_session_idx ON recordings (session_id, created_at);
